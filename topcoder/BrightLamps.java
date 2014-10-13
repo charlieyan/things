@@ -1,3 +1,4 @@
+//tco14.round3a.div1.300
 import java.lang.String;
 
 public class BrightLamps {
