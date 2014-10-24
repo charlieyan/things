@@ -123,6 +123,7 @@ r4 = (
   "Sothe")
 print c.getmin(r4)
 
+# TODO: fix runtime complexity!
 # r5 = (
 #   "yyAArJqjWTH5",
 #   "yyEEruYYWTHG",
