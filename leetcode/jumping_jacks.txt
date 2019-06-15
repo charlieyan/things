@@ -1,0 +1,276 @@
+2019-06-12
+
+###########################################################################
+
+617. Merge Two Binary Trees
+
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* mergeHelper(TreeNode* n1, TreeNode* n2) {
+        if (n1 == nullptr && n2 == nullptr) {
+            return nullptr;
+        }
+        
+        TreeNode* result = (n1 != nullptr) ? n1 : n2;
+        TreeNode* other = (result == n1) ? n2 : n1;
+        
+        if (other != nullptr) {
+            result->val += other->val;
+            
+            result->left = mergeHelper(result->left, other->left);
+            result->right = mergeHelper(result->right, other->right);
+        }
+        
+        return result;
+    }
+    
+    TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2) {
+        return mergeHelper(t1, t2);
+    }
+};
+
+###########################################################################
+
+728. Self Dividing Numbers
+
+class Solution {
+public:
+    bool is_self_dividing(int x) {
+        int n = x;
+        while (n > 1) {
+            int digit = n % 10;
+            if (digit > 0) {
+                if (x % digit != 0) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            n = n / 10;
+        }
+        return true;
+    }
+
+    vector<int> selfDividingNumbers(int left, int right) {
+        vector<int> result;
+        
+        for (int i = left; i < right + 1; ++i) {
+            if (is_self_dividing(i)) {
+                result.push_back(i);
+            }
+        }
+        
+        return result;
+    }
+};
+
+###########################################################################
+
+942. DI String Match
+
+class Solution {
+public:
+    int get_continuous_len(string S, int start_idx) {
+        int result = 1;
+        
+        char x = S[start_idx];
+        int idx = start_idx + 1;
+        
+        while (idx < S.length()) {
+            if (S[idx] != x) {
+                break;
+            }
+            result++;
+            idx++;
+        }
+        
+        return result;
+    }
+
+    vector<int> diStringMatch(string S) {
+        vector<int> result;
+        
+        int min = (S[0] == 'I') ? 1 : 0;
+        int max = (S[0] == 'D') ? S.size() - 1 : S.size();
+        if (S[0] == 'I') {
+
+            result.push_back(0);
+        } else if (S[0] == 'D') {
+            result.push_back(S.size());
+        }
+
+        char last_s = ' ';
+
+        int last_candidate_1 = -1;
+        int last_candidate_2 = -1;
+
+        for (int i = 0; i < S.size(); ++i) {
+            int l = get_continuous_len(S, i);
+            if (S[i] == 'I') {
+                int candidate = max - (l - 1);
+                last_candidate_1 = (last_candidate_1 >= 0
+                    ) ? last_candidate_1 : candidate;
+                result.push_back(candidate);
+            } else if (S[i] == 'D') {
+                int candidate = min + (l - 1);
+                last_candidate_2 = (last_candidate_2 >= 0
+                    ) ? last_candidate_2 : candidate;
+                result.push_back(candidate);
+            }
+            
+            if (last_s != S[i] && last_s != ' ') {
+                if (last_candidate_1 >= 0 && last_s == 'I') {
+                    max = last_candidate_1 - 1;
+                    last_candidate_1 = -1;
+                }
+                
+                if (last_candidate_2 >= 0 && last_s == 'D') {
+                    min = last_candidate_2 + 1;
+                    last_candidate_2 = -1;
+                }
+            }
+
+            last_s = S[i];
+        }
+        
+        return result;
+    }
+};
+
+###########################################################################
+
+852. Peak Index in a Mountain Array
+
+class Solution {
+public:
+    int peakIndexInMountainArray(vector<int>& A) {
+        int max_i = 0;
+        for (int i = 1; i < A.size(); ++i) {
+            if (A[i] > A[max_i]) {
+                max_i = i;
+            }
+        }
+        
+        return max_i;
+    }
+};
+
+###########################################################################
+
+933. Number of Recent Calls
+
+class RecentCounter {
+private:
+    vector<int> call_times_;
+
+public:
+    RecentCounter() {
+        
+    }
+    
+    int ping(int t) {
+        int low_thresh = t - 3000;
+        int count = 1;
+        int clear_idx = 0;
+        for (int i = 0; i < call_times_.size(); ++i) {
+            if (call_times_.at(
+                call_times_.size() - 1 - i) >= low_thresh) {
+                count++;
+            } else {
+                clear_idx = call_times_.size() - 1 - i;
+                break;
+            }
+        }
+        
+        int x = 0;
+        while (x < clear_idx) {
+            call_times_.erase(call_times_.begin());
+            x++;
+        }
+        
+        call_times_.push_back(t);
+        return count;
+    }
+};
+
+/**
+ * Your RecentCounter object will be instantiated and called as such:
+ * RecentCounter* obj = new RecentCounter();
+ * int param_1 = obj->ping(t);
+ */
+
+###########################################################################
+
+944. Delete Columns to Make Sorted
+
+class Solution {
+public:
+    bool find_decrease(string s) {
+        for (int i = 1; i < s.length(); ++i) {
+            if (s[i] > s[i-1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int minDeletionSize(vector<string>& A) {
+        // transpose A into columns, and find those columns
+        // that have decreasing sorted order
+        int count = 0;
+        
+        vector<bool> book;
+        for (int i = 0; i < A[0].length(); ++i) {
+            book.push_back(true);
+        }
+        
+        // do A in-place with swapping
+        for (int i = 1; i < A.size(); ++i) {
+            // for each 'row'
+            for (int j = 0; j < A[0].length(); ++j) {
+                if (!book[j]) {
+                    continue;
+                }
+                // for each 'col'
+                // col prev is A[i-1][j]
+                if (A[i-1][j] > A[i][j]) {
+                    count++;
+                    book[j] = false;
+                }
+            }
+        }
+ 
+        return count;
+    }
+};
+
+###########################################################################
+
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        // Kabane's algorithm
+        int max_up_to_i = nums[0];
+        int max_at_i = nums[0];
+        for (int i = 1; i < nums.size(); ++i) {
+            max_at_i = (max_at_i + nums[i] > nums[i]) ? max_at_i + nums[i] : nums[i];
+            // aka if max_at_i previously was < 0, zero it out and add to nums[i]
+            // this is the local optimum, shifting the left 'window' 'right'
+            max_up_to_i = (max_at_i > max_up_to_i) ? max_at_i : max_up_to_i;
+            // this is a global optimum, and it snaps to various local windows when appropriate
+        }
+        return max_up_to_i;
+    }
+};
+
+
+
